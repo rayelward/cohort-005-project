@@ -17,14 +17,12 @@ import {
 } from "~/components/comment-thread";
 import { db } from "~/db";
 import {
-  bookmarks,
   categories,
   comments,
   courses,
   lessonProgress,
   lessons,
   modules,
-  notes,
   quizzes,
   quizQuestions,
   quizOptions,
@@ -66,6 +64,13 @@ import { data, isRouteErrorResponse } from "react-router";
 import { z } from "zod";
 import { COUNTRIES } from "~/lib/ppp";
 import { parseFormData, parseParams } from "~/lib/validation";
+import { NOTE_MAX_LENGTH } from "~/lib/bookmarks-and-notes";
+import {
+  getNote,
+  isBookmarked,
+  saveNote,
+  toggleBookmark,
+} from "~/lib/bookmarks-and-notes.server";
 
 const lessonParamsSchema = z.object({
   slug: z.string().min(1),
@@ -87,8 +92,6 @@ const editCommentSchema = z.object({
   commentId: z.coerce.number().int(),
   body: z.string(),
 });
-
-const NOTE_MAX_LENGTH = 5000;
 
 const saveNoteSchema = z.object({
   body: z.string().trim().max(NOTE_MAX_LENGTH),
@@ -292,56 +295,6 @@ function markLessonInProgress(userId: number, lessonId: number) {
     })
     .returning()
     .get();
-}
-
-function getBookmark(userId: number, lessonId: number) {
-  return db
-    .select()
-    .from(bookmarks)
-    .where(and(eq(bookmarks.userId, userId), eq(bookmarks.lessonId, lessonId)))
-    .get();
-}
-
-// Removes the bookmark if there is one, otherwise adds it. Returns whether the
-// lesson is bookmarked afterwards.
-function toggleBookmark(userId: number, lessonId: number) {
-  const removed = db
-    .delete(bookmarks)
-    .where(and(eq(bookmarks.userId, userId), eq(bookmarks.lessonId, lessonId)))
-    .run();
-
-  if (removed.changes > 0) return false;
-
-  db.insert(bookmarks).values({ userId, lessonId }).onConflictDoNothing().run();
-  return true;
-}
-
-function getNote(userId: number, lessonId: number) {
-  return db
-    .select()
-    .from(notes)
-    .where(and(eq(notes.userId, userId), eq(notes.lessonId, lessonId)))
-    .get();
-}
-
-function saveNote(userId: number, lessonId: number, body: string) {
-  const now = new Date().toISOString();
-
-  return db
-    .insert(notes)
-    .values({ userId, lessonId, body, createdAt: now, updatedAt: now })
-    .onConflictDoUpdate({
-      target: [notes.userId, notes.lessonId],
-      set: { body, updatedAt: now },
-    })
-    .returning()
-    .get();
-}
-
-function deleteNote(userId: number, lessonId: number) {
-  db.delete(notes)
-    .where(and(eq(notes.userId, userId), eq(notes.lessonId, lessonId)))
-    .run();
 }
 
 function getLastWatchPosition(userId: number, lessonId: number) {
@@ -763,9 +716,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   // The learner's own bookmark and note for this lesson. Both are per-learner,
   // so a signed-out visitor gets neither.
   const bookmarked = currentUserId
-    ? !!getBookmark(currentUserId, lessonId)
+    ? isBookmarked(db, currentUserId, lessonId)
     : false;
-  const note = currentUserId ? getNote(currentUserId, lessonId) : undefined;
+  const note = currentUserId ? getNote(db, currentUserId, lessonId) : undefined;
 
   // Render lesson content from Markdown to HTML server-side
   const contentHtml = lesson.content
@@ -970,7 +923,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     requireLessonInCourse(lessonId, course.id);
 
     if (intent === "toggle-bookmark") {
-      return { bookmarked: toggleBookmark(currentUserId, lessonId) };
+      return { bookmarked: toggleBookmark(db, currentUserId, lessonId) };
     }
 
     const parsed = parseFormData(formData, saveNoteSchema);
@@ -981,13 +934,8 @@ export async function action({ params, request }: Route.ActionArgs) {
       );
     }
 
-    // An empty box means the learner cleared their note.
-    if (parsed.data.body.length === 0) {
-      deleteNote(currentUserId, lessonId);
-      return { noteSaved: true };
-    }
-
-    saveNote(currentUserId, lessonId, parsed.data.body);
+    // An empty box means the Student cleared their Note, which deletes it.
+    saveNote(db, currentUserId, lessonId, parsed.data.body, new Date());
     return { noteSaved: true };
   }
 

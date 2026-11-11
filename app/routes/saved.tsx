@@ -1,54 +1,13 @@
-import { Link } from "react-router";
-import { desc, eq } from "drizzle-orm";
+import { data, Link } from "react-router";
+import { eq } from "drizzle-orm";
 import type { Route } from "./+types/saved";
 import { db } from "~/db";
-import { bookmarks, courses, lessons, modules, notes } from "~/db/schema";
+import { UserRole, users } from "~/db/schema";
 import { requireUserId } from "~/lib/access.server";
+import { listBookmarks, listNotes } from "~/lib/bookmarks-and-notes.server";
 import { Card, CardContent } from "~/components/ui/card";
 import { Bookmark, NotebookPen } from "lucide-react";
 import { formatRelativeTime } from "~/lib/utils";
-
-// Columns that place a lesson in its module and course, for linking back to it.
-const lessonRefColumns = {
-  lessonId: lessons.id,
-  lessonTitle: lessons.title,
-  moduleTitle: modules.title,
-  courseTitle: courses.title,
-  courseSlug: courses.slug,
-};
-
-function getBookmarksForUser(userId: number) {
-  return db
-    .select({
-      id: bookmarks.id,
-      createdAt: bookmarks.createdAt,
-      ...lessonRefColumns,
-    })
-    .from(bookmarks)
-    .innerJoin(lessons, eq(bookmarks.lessonId, lessons.id))
-    .innerJoin(modules, eq(lessons.moduleId, modules.id))
-    .innerJoin(courses, eq(modules.courseId, courses.id))
-    .where(eq(bookmarks.userId, userId))
-    .orderBy(desc(bookmarks.createdAt))
-    .all();
-}
-
-function getNotesForUser(userId: number) {
-  return db
-    .select({
-      id: notes.id,
-      body: notes.body,
-      updatedAt: notes.updatedAt,
-      ...lessonRefColumns,
-    })
-    .from(notes)
-    .innerJoin(lessons, eq(notes.lessonId, lessons.id))
-    .innerJoin(modules, eq(lessons.moduleId, modules.id))
-    .innerJoin(courses, eq(modules.courseId, courses.id))
-    .where(eq(notes.userId, userId))
-    .orderBy(desc(notes.updatedAt))
-    .all();
-}
 
 export function meta() {
   return [
@@ -60,10 +19,17 @@ export function meta() {
 export async function loader({ request }: Route.LoaderArgs) {
   const userId = await requireUserId(request);
 
-  const savedBookmarks = getBookmarksForUser(userId);
-  const savedNotes = getNotesForUser(userId);
+  // Bookmarks and Notes belong to Students; the sidebar link is Students-only
+  // too.
+  const user = db.select().from(users).where(eq(users.id, userId)).get();
+  if (user?.role !== UserRole.Student) {
+    throw data("Only Students have saved lessons.", { status: 403 });
+  }
 
-  return { savedBookmarks, savedNotes };
+  return {
+    savedBookmarks: listBookmarks(db, userId),
+    savedNotes: listNotes(db, userId),
+  };
 }
 
 export default function Saved({ loaderData }: Route.ComponentProps) {

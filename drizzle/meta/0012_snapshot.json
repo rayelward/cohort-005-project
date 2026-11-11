@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "033a8058-5a58-41e3-a4db-e265e4feebaa",
+  "id": "ffefefcc-5ddc-42b1-93cf-5fe06c7fc5f4",
   "prevId": "b744b0cf-d65a-4d17-9053-452d70b0abe5",
   "tables": {
     "bookmarks": {
@@ -57,7 +57,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "bookmarks_lesson_id_lessons_id_fk": {
@@ -70,7 +70,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -979,7 +979,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "notes_lesson_id_lessons_id_fk": {
@@ -992,7 +992,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
