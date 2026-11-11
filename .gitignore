@@ -33,3 +33,7 @@ reports/
 
 # Emails written locally instead of sent
 .outbox/
+
+
+.env.example
+bun.lock
