@@ -28,11 +28,14 @@ export function createTestDb() {
   return testDb;
 }
 
+/** The in-memory database `createTestDb` returns. Import it; don't re-derive it. */
+export type TestDb = ReturnType<typeof createTestDb>;
+
 /**
  * Seeds a minimal set of base data (user, category, course) that most tests need.
  * Returns the created IDs for use in test assertions.
  */
-export function seedBaseData(testDb: ReturnType<typeof createTestDb>) {
+export function seedBaseData(testDb: TestDb) {
   const user = testDb
     .insert(schema.users)
     .values({

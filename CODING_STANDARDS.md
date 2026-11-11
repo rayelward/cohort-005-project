@@ -23,3 +23,10 @@ is a lie the type checker believes.
 Both switch the type checker off at the exact point you are least sure. If a
 value can be missing, narrow it with a check. If you cannot name the type,
 the shape is wrong — fix the shape.
+
+## Name things with GLOSSARY.md terms
+
+UI labels, route paths and identifiers use the `GLOSSARY.md` term for the
+concept they show. A word listed under a term's `_Avoid_` line is a
+violation in any of them. A sidebar link to Bookmarks reads "Bookmarks", not
+"Saved", because the glossary lists "saved item" under `_Avoid_`.

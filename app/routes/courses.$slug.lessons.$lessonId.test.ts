@@ -1,10 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createTestDb, seedBaseData } from "~/test/setup";
+import { createTestDb, seedBaseData, type TestDb } from "~/test/setup";
 import * as schema from "~/db/schema";
 import { NOTE_MAX_LENGTH } from "~/lib/bookmarks-and-notes";
 import { getNote, isBookmarked } from "~/lib/bookmarks-and-notes.server";
-
-type TestDb = ReturnType<typeof createTestDb>;
 
 // The route reads `db` and the signed-in user from module scope; point both at
 // test doubles.

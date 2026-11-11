@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { eq } from "drizzle-orm";
-import { createTestDb, seedBaseData } from "~/test/setup";
+import { createTestDb, seedBaseData, type TestDb } from "~/test/setup";
 import * as schema from "~/db/schema";
 import {
   getNote,
@@ -10,8 +10,6 @@ import {
   saveNote,
   toggleBookmark,
 } from "./bookmarks-and-notes.server";
-
-type TestDb = ReturnType<typeof createTestDb>;
 
 const MONDAY = new Date("2026-11-09T12:00:00.000Z");
 const TUESDAY = new Date("2026-11-10T12:00:00.000Z");
