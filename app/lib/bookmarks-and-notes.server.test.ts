@@ -122,7 +122,7 @@ describe("saving a Note", () => {
   });
 });
 
-describe("listing saved lessons", () => {
+describe("listing Bookmarks and Notes", () => {
   it("lists only the Student's own Bookmarks, newest first, placed in their course", () => {
     toggleBookmark(db, base.user.id, lessonId);
     toggleBookmark(db, base.user.id, otherLessonId);

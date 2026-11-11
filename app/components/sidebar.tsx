@@ -66,8 +66,8 @@ const navItems: NavItem[] = [
     roles: [UserRole.Student],
   },
   {
-    label: "Saved",
-    to: "/saved",
+    label: "Bookmarks & Notes",
+    to: "/bookmarks-and-notes",
     icon: <Bookmark className="size-4" />,
     roles: [UserRole.Student],
   },

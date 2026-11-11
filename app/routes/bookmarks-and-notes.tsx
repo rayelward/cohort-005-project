@@ -1,6 +1,6 @@
 import { data, Link } from "react-router";
 import { eq } from "drizzle-orm";
-import type { Route } from "./+types/saved";
+import type { Route } from "./+types/bookmarks-and-notes";
 import { db } from "~/db";
 import { UserRole, users } from "~/db/schema";
 import { requireUserId } from "~/lib/access.server";
@@ -11,7 +11,7 @@ import { formatRelativeTime } from "~/lib/utils";
 
 export function meta() {
   return [
-    { title: "Saved — Cadence" },
+    { title: "Bookmarks & Notes — Cadence" },
     { name: "description", content: "Your bookmarks and notes" },
   ];
 }
@@ -23,22 +23,24 @@ export async function loader({ request }: Route.LoaderArgs) {
   // too.
   const user = db.select().from(users).where(eq(users.id, userId)).get();
   if (user?.role !== UserRole.Student) {
-    throw data("Only Students have saved lessons.", { status: 403 });
+    throw data("Only Students have Bookmarks and Notes.", { status: 403 });
   }
 
   return {
-    savedBookmarks: listBookmarks(db, userId),
-    savedNotes: listNotes(db, userId),
+    bookmarks: listBookmarks(db, userId),
+    notes: listNotes(db, userId),
   };
 }
 
-export default function Saved({ loaderData }: Route.ComponentProps) {
-  const { savedBookmarks, savedNotes } = loaderData;
+export default function BookmarksAndNotes({
+  loaderData,
+}: Route.ComponentProps) {
+  const { bookmarks, notes } = loaderData;
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Saved</h1>
+        <h1 className="text-2xl font-bold">Bookmarks &amp; Notes</h1>
         <p className="text-sm text-muted-foreground">
           The lessons you flagged, and what you wrote about them.
         </p>
@@ -51,7 +53,7 @@ export default function Saved({ loaderData }: Route.ComponentProps) {
             Bookmarks
           </h2>
 
-          {savedBookmarks.length === 0 ? (
+          {bookmarks.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-sm text-muted-foreground">
                 No bookmarks yet.
@@ -59,7 +61,7 @@ export default function Saved({ loaderData }: Route.ComponentProps) {
             </Card>
           ) : (
             <div className="space-y-2">
-              {savedBookmarks.map((bookmark) => (
+              {bookmarks.map((bookmark) => (
                 <Card key={bookmark.id}>
                   <CardContent className="py-3">
                     <Link
@@ -84,7 +86,7 @@ export default function Saved({ loaderData }: Route.ComponentProps) {
             Notes
           </h2>
 
-          {savedNotes.length === 0 ? (
+          {notes.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-sm text-muted-foreground">
                 No notes yet.
@@ -92,7 +94,7 @@ export default function Saved({ loaderData }: Route.ComponentProps) {
             </Card>
           ) : (
             <div className="space-y-2">
-              {savedNotes.map((note) => (
+              {notes.map((note) => (
                 <Card key={note.id}>
                   <CardContent className="space-y-1 py-3">
                     <Link
