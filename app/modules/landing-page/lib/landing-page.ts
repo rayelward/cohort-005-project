@@ -12,6 +12,7 @@ export type FeaturedCourse = {
   title: string;
   slug: string;
   description: string;
+  coverImageUrl: string | null;
   instructorName: string;
   categoryName: string;
   categorySlug: string;
@@ -49,6 +50,7 @@ function getFeaturedCourses(db: Db): FeaturedCourse[] {
       title: courses.title,
       slug: courses.slug,
       description: courses.description,
+      coverImageUrl: courses.coverImageUrl,
       instructorName: users.name,
       categoryName: categories.name,
       categorySlug: categories.slug,
