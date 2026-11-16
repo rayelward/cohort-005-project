@@ -1,5 +1,11 @@
 # Coding standards
 
+## Moved code is new code
+
+Code a change moves into a new file or module is held to these standards as
+if it were written in that change. A split is when old debt gets paid, not
+carried into a fresh file.
+
 ## Fail with a thrown response, not a return value
 
 A loader or an action that cannot continue throws. It does not return an
@@ -19,6 +25,8 @@ values reach any query. Parse once, at the boundary; after that the value has
 a type and you do not check it again. Coerce numbers through the schema, not
 `Number()`: `Number("")` is `0`, and an empty `lessonId` once opened lesson 0
 for every learner.
+`standards/no-number-coercion` in oxlint catches `Number()` around a
+request value.
 
 ## Check permission in the action, not only the loader
 
@@ -81,6 +89,8 @@ files and `"Pending"` in one.
 A function that calls `Date.now()` cannot be tested at a fixed moment. Take
 the time as an argument. The refund window tests failed every night at
 midnight until we did this.
+`standards/no-clock` in oxlint enforces this inside `app/modules/`; apply it
+by hand elsewhere.
 
 ## Keep secrets on the server
 

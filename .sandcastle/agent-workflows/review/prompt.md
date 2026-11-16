@@ -7,26 +7,33 @@ Review it with the code-review skill, .agents/skills/code-review/SKILL.md:
 - spec: /tmp/review-spec.md
 - standards: CODING_STANDARDS.md
 
-Leave the human reviewer as little as possible. Fix every finding you can on
-`{{BRANCH}}`, and commit each fix through the pre-commit hook. The workflow
-pushes your commits. Leave `.github/` untouched.
+The skill ends with a report. Your job goes on past it: fix every finding on
+`{{BRANCH}}` except a **human call**, a finding that needs a product decision
+or a reading of the spec the ticket does not settle. Everything else is yours
+to fix, smells and judgement calls included: make the judgement. Code this PR
+moved counts as code this PR wrote. Commit each fix through the pre-commit
+hook. The workflow pushes your commits. Leave `.github/` untouched.
 
-Every finding you leave unfixed becomes an inline comment on its file and
-line. You will be asked for them as structured output.
+You are done when every finding you leave is a human call.
+
+Each human call becomes an inline comment on its file and line, and carries
+the full finding. You will be asked for them as structured output.
 
 Write your verdict on the branch, after your fixes, to /tmp/review-verdict.md:
 
     ## Standards: PASS | CHANGES REQUESTED
-    One line of reasoning, then the findings, worst first: each one fixed
-    (its commit) or left (its file and line), citing the rule by heading.
+    One line of reasoning, then the findings, worst first: each fixed one with
+    its commit and the rule heading; each human call as one line, its rule
+    heading and `file:line`. The inline comment carries the rest.
 
     ## Spec: PASS | CHANGES REQUESTED
-    One line of reasoning, then the findings, fixed or left.
+    One line of reasoning, then the findings, the same way.
 
     ## Rules this review wanted and could not find
     Anything you wanted to fail the change for that no standard covers.
     The retro reads this list.
 
-When the change shows in the UI, save screenshots as PNGs in /tmp/evidence/.
-Reference each in the verdict by its absolute path, e.g.
-`![after](/tmp/evidence/after.png)`. The workflow uploads them.
+When the change shows in the UI, save an after screenshot as a PNG in
+/tmp/evidence/. The pull request already carries the before. Reference each
+in the verdict by its absolute path, e.g. `![after](/tmp/evidence/after.png)`.
+The workflow uploads them.

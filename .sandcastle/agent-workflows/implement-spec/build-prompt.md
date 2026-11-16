@@ -15,6 +15,11 @@ Read CODING_STANDARDS.md.
 - The review workflow checks you against the ticket's "Done when". Reread it
   before you stop.
 - `npm run build` must pass too.
+- Every file you commit must stay under 5000 tokens; the pre-commit hook
+  checks each one. Before you edit a file, run
+  `node scripts/check-file-tokens.js <file>`. When it is over, split it first,
+  in a commit of its own that changes no behaviour, then build the ticket in
+  the next commit.
 - Commit with `git commit` on the current branch. When the pre-commit hook
   rejects a commit, fix the work and commit again. The hook stays as it is:
   no `--no-verify`, no edits to `.husky/`, `scripts/pre-commit.sh` or
