@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { coverToneFor, type CoverTone } from "~/modules/landing-page";
 import type { FeaturedCourse } from "~/modules/landing-page/index.server";
 import { cn } from "~/lib/utils";
 
 type CoverCourse = Pick<
   FeaturedCourse,
-  "title" | "categoryName" | "categorySlug" | "coverImageUrl"
+  "title" | "categoryName" | "categorySlug"
 >;
 
 // Literal class strings so Tailwind's scanner finds every one of them.
@@ -26,21 +25,6 @@ export function CourseCover({
   showTitle?: boolean;
   className?: string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
-
-  // An instructor's own cover wins; the gradient stands in when there is none.
-  if (course.coverImageUrl && !imageFailed) {
-    return (
-      <img
-        src={course.coverImageUrl}
-        alt=""
-        aria-hidden
-        className={cn("aspect-video w-full object-cover", className)}
-        onError={() => setImageFailed(true)}
-      />
-    );
-  }
-
   return (
     <div
       aria-hidden

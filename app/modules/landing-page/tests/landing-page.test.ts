@@ -106,12 +106,6 @@ describe("featured courses", () => {
     expect(featured?.lessonCount).toBe(5);
   });
 
-  it("carries the cover image an instructor set", () => {
-    db.update(schema.courses).set({ coverImageUrl: "/images/cover.svg" }).run();
-
-    expect(page().featuredCourses[0].coverImageUrl).toBe("/images/cover.svg");
-  });
-
   it("counts zero lessons for a course with no modules", () => {
     expect(page().featuredCourses[0].lessonCount).toBe(0);
   });
@@ -122,7 +116,6 @@ describe("featured courses", () => {
       title: "Test Course",
       slug: "test-course",
       description: "A test course",
-      coverImageUrl: null,
       instructorName: "Test Instructor",
       categoryName: "Programming",
       categorySlug: "programming",
