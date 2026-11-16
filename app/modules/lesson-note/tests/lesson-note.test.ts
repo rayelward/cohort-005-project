@@ -63,6 +63,7 @@ describe("describeNoteDraft", () => {
 
   it("does not count surrounding whitespace against the limit", () => {
     const draft = describeNoteDraft(` ${"a".repeat(MAX_NOTE_LENGTH)} `, "");
+    expect(draft.length).toBe(MAX_NOTE_LENGTH);
     expect(draft.overLimit).toBe(false);
     expect(draft.canSave).toBe(true);
   });

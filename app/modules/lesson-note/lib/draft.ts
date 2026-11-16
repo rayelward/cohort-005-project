@@ -9,12 +9,13 @@ export type NoteDraft = {
 };
 
 export function assessDraft(draft: string, savedBody: string): NoteDraft {
-  // The server trims before it validates, so judge the draft the same way.
+  // The server trims before it validates and stores, so count and judge the
+  // draft the same way, or the counter disagrees with the limit.
   const trimmed = draft.trim();
   const overLimit = trimmed.length > MAX_NOTE_LENGTH;
   const unsaved = trimmed !== savedBody;
   return {
-    length: draft.length,
+    length: trimmed.length,
     max: MAX_NOTE_LENGTH,
     overLimit,
     unsaved,
