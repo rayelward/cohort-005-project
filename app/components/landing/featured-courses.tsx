@@ -8,17 +8,7 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { CourseCover } from "~/components/landing/course-cover";
-
-type FeaturedCourse = {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  instructorName: string;
-  categoryName: string;
-  categorySlug: string;
-  lessonCount: number;
-};
+import type { FeaturedCourse } from "~/modules/landing-page/index.server";
 
 export function FeaturedCourses({ courses }: { courses: FeaturedCourse[] }) {
   if (courses.length === 0) return null;
@@ -54,12 +44,7 @@ function FeaturedCourseCard({ course }: { course: FeaturedCourse }) {
   return (
     <Link to={`/courses/${course.slug}`} className="group">
       <Card className="h-full overflow-hidden pt-0 transition-shadow group-hover:shadow-md">
-        <CourseCover
-          title={course.title}
-          categoryName={course.categoryName}
-          categorySlug={course.categorySlug}
-          showTitle={false}
-        />
+        <CourseCover course={course} showTitle={false} />
         <CardHeader>
           <h3 className="font-semibold leading-snug group-hover:text-primary">
             {course.title}

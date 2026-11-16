@@ -2,13 +2,7 @@ import { Link } from "react-router";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { CourseCover } from "~/components/landing/course-cover";
-
-type CoverCourse = {
-  id: number;
-  title: string;
-  categoryName: string;
-  categorySlug: string;
-};
+import type { FeaturedCourse } from "~/modules/landing-page/index.server";
 
 const HIGHLIGHTS = [
   "Track your progress lesson by lesson",
@@ -28,7 +22,7 @@ export function Hero({
   courses,
 }: {
   signedIn: boolean;
-  courses: CoverCourse[];
+  courses: FeaturedCourse[];
 }) {
   return (
     <section className="mx-auto grid max-w-7xl items-center gap-16 px-6 py-20 lg:grid-cols-2 lg:py-28">
@@ -87,7 +81,7 @@ function Highlights() {
   );
 }
 
-function HeroCollage({ courses }: { courses: CoverCourse[] }) {
+function HeroCollage({ courses }: { courses: FeaturedCourse[] }) {
   if (courses.length === 0) return null;
 
   return (
@@ -95,9 +89,7 @@ function HeroCollage({ courses }: { courses: CoverCourse[] }) {
       {courses.map((course, index) => (
         <CourseCover
           key={course.id}
-          title={course.title}
-          categoryName={course.categoryName}
-          categorySlug={course.categorySlug}
+          course={course}
           showTitle={index === courses.length - 1}
           className={`absolute w-3/4 rounded-xl shadow-xl ring-1 ring-black/5 ${COLLAGE_POSITIONS[index]}`}
         />
