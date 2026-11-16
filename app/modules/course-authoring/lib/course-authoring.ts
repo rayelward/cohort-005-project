@@ -18,6 +18,9 @@ export type NewCourse = {
 
 const { courses, modules, lessons } = schema;
 
+// The position lookups below are aggregates with no GROUP BY, so each returns
+// exactly one row, and coalesce makes an empty course or module start at 0.
+
 export function createCourse(db: Db, course: NewCourse, now: Date) {
   if (course.salesCopy.trim().length === 0) {
     throw new Error("Sales copy cannot be empty");
@@ -55,18 +58,18 @@ export function setCourseStatus(
 export type NewModule = { courseId: number; title: string };
 
 export function addModule(db: Db, { courseId, title }: NewModule, now: Date) {
-  const last = db
+  const [last] = db
     .select({ max: sql<number>`coalesce(max(${modules.position}), 0)` })
     .from(modules)
     .where(eq(modules.courseId, courseId))
-    .get();
+    .all();
 
   return db
     .insert(modules)
     .values({
       courseId,
       title,
-      position: (last?.max ?? 0) + 1,
+      position: last.max + 1,
       createdAt: now.toISOString(),
     })
     .returning()
@@ -76,18 +79,18 @@ export function addModule(db: Db, { courseId, title }: NewModule, now: Date) {
 export type NewLesson = { moduleId: number; title: string };
 
 export function addLesson(db: Db, { moduleId, title }: NewLesson, now: Date) {
-  const last = db
+  const [last] = db
     .select({ max: sql<number>`coalesce(max(${lessons.position}), 0)` })
     .from(lessons)
     .where(eq(lessons.moduleId, moduleId))
-    .get();
+    .all();
 
   return db
     .insert(lessons)
     .values({
       moduleId,
       title,
-      position: (last?.max ?? 0) + 1,
+      position: last.max + 1,
       createdAt: now.toISOString(),
     })
     .returning()
