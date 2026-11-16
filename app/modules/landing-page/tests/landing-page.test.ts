@@ -1,21 +1,20 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDb, seedBaseData, type TestDb } from "~/test/setup";
-import * as schema from "~/db/schema";
-import { CourseStatus, UserRole } from "~/db/schema";
-import { markdown } from "~/lib/text";
+import { CourseStatus } from "~/db/schema";
+import { createCourseAuthoring } from "~/modules/course-authoring/index.server";
 import { createLandingPage, FEATURED_COURSE_LIMIT } from "../index.server";
 
 let db: TestDb;
 let base: ReturnType<typeof seedBaseData>;
+let authoring: ReturnType<typeof createCourseAuthoring>;
 
 beforeEach(() => {
   db = createTestDb();
   base = seedBaseData(db);
+  authoring = createCourseAuthoring(db);
 });
 
 // ─── Fixtures ───
-// No module owns writing courses, modules or lessons yet, so rows go in
-// directly. Kept in one place so a schema change touches only this block.
 
 let slugCounter = 0;
 
@@ -25,49 +24,38 @@ function addCourse(
   options: { status?: CourseStatus; instructorId?: number } = {}
 ) {
   slugCounter += 1;
-  return db
-    .insert(schema.courses)
-    .values({
+  const now = new Date(createdAt);
+  const course = authoring.createCourse(
+    {
       title,
       slug: `course-${slugCounter}`,
       description: `About ${title}`,
-      salesCopy: markdown(title),
+      salesCopy: title,
       instructorId: options.instructorId ?? base.instructor.id,
       categoryId: base.category.id,
-      status: options.status ?? CourseStatus.Published,
-      createdAt,
-    })
-    .returning()
-    .get();
+      coverImageUrl: null,
+    },
+    now
+  );
+  const status = options.status ?? CourseStatus.Published;
+  if (status !== CourseStatus.Draft) {
+    authoring.setCourseStatus({ courseId: course.id, status }, now);
+  }
+  return course;
 }
 
 function addLessons(courseId: number, perModule: number[]) {
+  const now = new Date("2026-05-01T00:00:00.000Z");
   perModule.forEach((count, index) => {
-    const mod = db
-      .insert(schema.modules)
-      .values({ courseId, title: `Module ${index + 1}`, position: index + 1 })
-      .returning()
-      .get();
+    const mod = authoring.addModule(
+      { courseId, title: `Module ${index + 1}` },
+      now
+    );
     for (let i = 0; i < count; i++) {
-      db.insert(schema.lessons)
-        .values({ moduleId: mod.id, title: `Lesson ${i + 1}`, position: i + 1 })
-        .run();
+      authoring.addLesson({ moduleId: mod.id, title: `Lesson ${i + 1}` }, now);
     }
   });
 }
-
-function addInstructor(name: string) {
-  return db
-    .insert(schema.users)
-    .values({
-      name,
-      email: `${name.toLowerCase().replaceAll(" ", ".")}@example.com`,
-      role: UserRole.Instructor,
-    })
-    .returning()
-    .get();
-}
-
 const page = () => createLandingPage(db).get();
 
 describe("featured courses", () => {
@@ -126,9 +114,10 @@ describe("featured courses", () => {
 
 describe("stats", () => {
   it("totals published courses, their lessons and their instructors", () => {
-    const other = addInstructor("Olive Other");
+    // "Instructors" counts the distinct authors of published courses, and no
+    // module creates users, so the seeded second user is the other author.
     const second = addCourse("Second", "2026-05-01T00:00:00.000Z", {
-      instructorId: other.id,
+      instructorId: base.user.id,
     });
     const third = addCourse("Third", "2026-05-02T00:00:00.000Z");
     addLessons(base.course.id, [1]);
@@ -139,10 +128,9 @@ describe("stats", () => {
   });
 
   it("leaves unpublished courses and their lessons out of every total", () => {
-    const other = addInstructor("Dana Draft");
     const draft = addCourse("Draft", "2026-05-01T00:00:00.000Z", {
       status: CourseStatus.Draft,
-      instructorId: other.id,
+      instructorId: base.user.id,
     });
     addLessons(draft.id, [4]);
 
@@ -150,7 +138,10 @@ describe("stats", () => {
   });
 
   it("is all zeros when nothing is published", () => {
-    db.update(schema.courses).set({ status: CourseStatus.Draft }).run();
+    authoring.setCourseStatus(
+      { courseId: base.course.id, status: CourseStatus.Draft },
+      new Date("2026-05-01T00:00:00.000Z")
+    );
 
     expect(page()).toEqual({
       featuredCourses: [],
