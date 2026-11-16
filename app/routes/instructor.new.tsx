@@ -4,10 +4,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import type { Route } from "./+types/instructor.new";
 import { people } from "~/modules/permissions/person.server";
+import { courseAuthoring } from "~/modules/course-authoring/index.server";
 import { parseFormData } from "~/lib/validation";
-import { markdown } from "~/lib/text";
 import { db } from "~/db";
-import { categories, courses, CourseStatus } from "~/db/schema";
+import { categories, courses } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -37,35 +37,6 @@ function generateSlug(name: string) {
 
 function getCourseBySlug(slug: string) {
   return db.select().from(courses).where(eq(courses.slug, slug)).get();
-}
-
-function createCourse(
-  title: string,
-  slug: string,
-  description: string,
-  salesCopy: string,
-  instructorId: number,
-  categoryId: number,
-  coverImageUrl: string | null
-) {
-  if (salesCopy.trim().length === 0) {
-    throw new Error("Sales copy cannot be empty");
-  }
-
-  return db
-    .insert(courses)
-    .values({
-      title,
-      slug,
-      description,
-      salesCopy: markdown(salesCopy),
-      instructorId,
-      categoryId,
-      status: CourseStatus.Draft,
-      coverImageUrl,
-    })
-    .returning()
-    .get();
 }
 
 const newCourseSchema = z.object({
@@ -118,14 +89,17 @@ export async function action({ request }: Route.ActionArgs) {
     );
   }
 
-  const course = createCourse(
-    title,
-    slug,
-    description,
-    salesCopy,
-    person.id,
-    parseInt(categoryId, 10),
-    coverImageUrl || null
+  const course = courseAuthoring.createCourse(
+    {
+      title,
+      slug,
+      description,
+      salesCopy,
+      instructorId: person.id,
+      categoryId: parseInt(categoryId, 10),
+      coverImageUrl: coverImageUrl || null,
+    },
+    new Date()
   );
 
   throw redirect(`/courses/${course.slug}`);

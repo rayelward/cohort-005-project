@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import type { Route } from "./+types/admin.courses";
 import { people } from "~/modules/permissions/person.server";
+import { courseAuthoring } from "~/modules/course-authoring/index.server";
 import { parseFormData } from "~/lib/validation";
 import {
   CourseStatus,
@@ -67,15 +68,6 @@ function getEnrollmentCountForCourse(courseId: number) {
   return result?.count ?? 0;
 }
 
-function updateCourseStatus(id: number, status: CourseStatus) {
-  return db
-    .update(courses)
-    .set({ status, updatedAt: new Date().toISOString() })
-    .where(eq(courses.id, id))
-    .returning()
-    .get();
-}
-
 export function meta() {
   return [
     { title: "Manage Courses — Cadence" },
@@ -113,7 +105,10 @@ export async function action({ request }: Route.ActionArgs) {
   const { intent } = parsed.data;
 
   if (intent === "update-status") {
-    updateCourseStatus(parsed.data.courseId, parsed.data.status);
+    courseAuthoring.setCourseStatus(
+      { courseId: parsed.data.courseId, status: parsed.data.status },
+      new Date()
+    );
     return { success: true };
   }
 
