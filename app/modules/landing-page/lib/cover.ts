@@ -1,12 +1,6 @@
-export type CoverTone = "sky" | "violet" | "emerald" | "amber" | "rose";
+const TONES = ["sky", "violet", "emerald", "amber", "rose"] as const;
 
-const TONES: readonly CoverTone[] = [
-  "sky",
-  "violet",
-  "emerald",
-  "amber",
-  "rose",
-];
+export type CoverTone = (typeof TONES)[number];
 
 // The seeded categories get hand-picked tones so the featured row never
 // repeats a colour; any other category hashes onto the same palette.
