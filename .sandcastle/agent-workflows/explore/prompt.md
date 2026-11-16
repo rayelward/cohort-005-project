@@ -23,6 +23,7 @@ Include filenames, and lines of code. Remember that the agent that implements wi
      - whether the issue's claims hold up against the code, with evidence.
      - the blast radius, in prose: the 2–3 places that matter (modules under app/modules/, routes, tables). A schema change or a migration goes first, and loudly;
      - whether it's a one-way or a two-way door
+     - any file in the blast radius over the 5000-token limit (`node scripts/check-file-tokens.js <file>` fails on it): the implementer has to split it first;
      - the duplicates closed onto it, crediting by number any detail only they had;
      - last, the open questions a human has to settle. An empty list is a claim, and usually a wrong one.
    - When an issue shows in the UI, save a screenshot of it as /tmp/evidence/<issue-number>-<name>.png. Reference it in that issue's comment by its absolute path, e.g. `![now](/tmp/evidence/12-now.png)`. The workflow uploads them.

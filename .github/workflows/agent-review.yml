@@ -163,6 +163,13 @@ jobs:
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
 
+      - name: Install agent-browser
+        # The agent drives the app with it for screenshots and checks
+        # (docs/agents/agent-browser.md). Installed here, not by the agent.
+        run: |
+          npm install -g agent-browser
+          agent-browser install
+
       - name: Migrate and seed the database
         # The pre-commit hook runs on every commit the agent makes, and the
         # repo's checks need a database.
@@ -280,16 +287,17 @@ jobs:
 
       - name: Post the inline comments
         # One review, event COMMENT, with a comment on each line the agent
-        # left a finding on. They go where the fixes went: the fallback PR if
-        # the push was rejected. review.ts already dropped every comment
-        # outside the diff, because GitHub rejects the whole review for one.
+        # left a human call on. They go where the fixes went: the fallback PR
+        # if the push was rejected. review.ts already moved every comment
+        # outside the diff into the review's summary, because GitHub rejects
+        # the whole review for one. No file means no human calls.
         env:
           GH_TOKEN: ${{ secrets.FACTORY_PAT }}
           TARGET: ${{ steps.fallback.outputs.number || github.event.pull_request.number }}
         run: |
           set -euo pipefail
           review="$RUNNER_TEMP/review-comments.json"
-          if [ "$(jq '.comments | length' "$review")" -eq 0 ]; then
+          if [ ! -s "$review" ]; then
             echo "No inline comments: the review fixed or passed everything."
             exit 0
           fi

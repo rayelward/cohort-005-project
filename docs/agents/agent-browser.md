@@ -52,6 +52,25 @@ change you are reporting on trust.
 Screenshots are PR evidence: a before and an after for a change that shows in
 the UI.
 
+## Signing in as a seeded user
+
+Most pages need a user in the session. Post to `/api/switch-user` from the
+page, then reload:
+
+```bash
+agent-browser eval "fetch('/api/switch-user',{method:'POST',body:new URLSearchParams({userId:'5'})}).then(r=>r.status)"
+```
+
+Users that `npm run db:seed` creates:
+
+| id  | Who                    | Use it for                                                        |
+| --- | ---------------------- | ----------------------------------------------------------------- |
+| 1   | Alex Rivera, admin     | `/admin/*`                                                        |
+| 2   | Sarah Chen, instructor | owns `introduction-to-typescript`, `design-systems-with-tailwind` |
+| 5   | Emma Wilson, student   | enrolled in `introduction-to-typescript`                          |
+
+For anything else, ask `data.db` with `sqlite3`.
+
 ## Two things that will bite you
 
 **Hydration lags "networkidle".** The button is in the server HTML before

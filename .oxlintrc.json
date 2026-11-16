@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "react", "jsx-a11y", "import", "vitest"],
-  "jsPlugins": ["./lint-rules/sql-raw.js"],
+  "jsPlugins": ["./lint-rules/sql-raw.js", "./lint-rules/standards.js"],
   "categories": {
     "correctness": "error"
   },
@@ -66,6 +66,7 @@
       "msg",
       "val"
     ],
+    "standards/no-number-coercion": "error",
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
     "react/jsx-key": "error",
@@ -118,6 +119,26 @@
       "files": ["request-logger/render.ts", "request-logger/render.test.ts"],
       "rules": {
         "typescript/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["app/modules/*/*.ts", "app/modules/*/lib/**"],
+      "rules": {
+        "standards/no-clock": "error"
+      }
+    },
+    // Files that still coerce request input with Number(). Remove each entry
+    // once the file parses it with a schema.
+    {
+      "files": [
+        "app/routes/courses.$slug.$moduleId.tsx",
+        "app/routes/courses.$slug.lessons.$lessonId.tsx",
+        "app/routes/instructor.$courseId.lessons.$lessonId.quiz.tsx",
+        "app/routes/instructor.$courseId.lessons.$lessonId.tsx",
+        "app/routes/instructor.$courseId.modules.$moduleId.tsx"
+      ],
+      "rules": {
+        "standards/no-number-coercion": "off"
       }
     },
     // Files already over a size limit. Remove each entry once the file is split.

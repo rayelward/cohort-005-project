@@ -104,6 +104,14 @@ module.exports = {
         path: ["^app/db/index\\.ts$", "^node_modules/better-sqlite3/"],
       },
     },
+    {
+      name: "modules-no-components",
+      comment:
+        "A module sits below the UI: components import modules, never the other way round. A type the module and a component share lives in the module and is exported from its entry point.",
+      severity: "error",
+      from: { path: "^app/modules/" },
+      to: { path: "^app/components/" },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },
