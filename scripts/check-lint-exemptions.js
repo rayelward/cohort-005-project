@@ -12,6 +12,7 @@ const RATCHETED = [
   "max-lines-per-function",
   "max-depth",
   "max-params",
+  "standards/no-number-coercion",
 ];
 const CONFIG = ".oxlintrc.json";
 
