@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 import { CourseCover } from "~/components/landing/course-cover";
 import type { FeaturedCourse } from "~/modules/landing-page/index.server";
 
@@ -10,7 +11,8 @@ const HIGHLIGHTS = [
   "Learn on your own schedule",
 ];
 
-// Each card in the collage sits at its own offset and tilt.
+// The collage has room for this many cards and no more; any extra course
+// would have no offset and pile up in the top-left corner.
 const COLLAGE_POSITIONS = [
   "left-0 top-0 -rotate-3",
   "right-0 top-1/4 rotate-2",
@@ -25,7 +27,12 @@ export function Hero({
   courses: FeaturedCourse[];
 }) {
   return (
-    <section className="mx-auto grid max-w-7xl items-center gap-16 px-6 py-20 lg:grid-cols-2 lg:py-28">
+    <section
+      className={cn(
+        "mx-auto grid max-w-7xl items-center gap-16 px-6 py-20 lg:py-28",
+        courses.length > 0 && "lg:grid-cols-2"
+      )}
+    >
       <div>
         <p className="mb-6 w-fit rounded-full border border-border bg-muted/50 px-3 py-1 text-sm font-medium text-muted-foreground">
           Self-paced courses for developers
@@ -82,16 +89,20 @@ function Highlights() {
 }
 
 function HeroCollage({ courses }: { courses: FeaturedCourse[] }) {
-  if (courses.length === 0) return null;
+  const shown = courses.slice(0, COLLAGE_POSITIONS.length);
+  if (shown.length === 0) return null;
 
   return (
     <div className="relative hidden h-[26rem] lg:block">
-      {courses.map((course, index) => (
+      {shown.map((course, index) => (
         <CourseCover
           key={course.id}
           course={course}
-          showTitle={index === courses.length - 1}
-          className={`absolute w-3/4 rounded-xl shadow-xl ring-1 ring-black/5 ${COLLAGE_POSITIONS[index]}`}
+          showTitle={index === shown.length - 1}
+          className={cn(
+            "absolute w-3/4 rounded-xl shadow-xl ring-1 ring-black/5",
+            COLLAGE_POSITIONS[index]
+          )}
         />
       ))}
     </div>
